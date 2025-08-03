@@ -1,0 +1,7 @@
+base
+pkgconf
+meson
+clang
+cmake
+lld
+sudo

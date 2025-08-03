@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - '**/meson.build'
+      - '**/meson_options.txt'
+      - '**/*.meson'
+      - '.github/**'
+      - '**/*.cc'
+      - '**/*.hh'
+
+permissions:
+  contents: read
+
+jobs:
+  clang:
+    name: "Build CCI-Logger"
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          sed -i 's/SigLevel    = Required DatabaseOptional/SigLevel    = Optional TrustAll/' /etc/pacman.conf
+          pacman -Syyu --noconfirm --noprogressbar --needed - < .github/dependencies
+
+      - name: Compile
+        run: |
+          CXX=clang++ CXX_LD=lld meson setup target
+          meson compile -C target
+
+      - name: Run test
+        run: |
+          ./target/test/logger_test
+
